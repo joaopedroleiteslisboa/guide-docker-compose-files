@@ -1,0 +1,58 @@
+version: '3'
+
+services:
+  wp:
+    image: wordpress:latest # https://hub.docker.com/_/wordpress/
+    ports:
+     - 8888:80 # change ip if required
+   # volumes:
+      # ./config/php.conf.ini:/usr/local/etc/php/conf.d/conf.ini
+      # ./wpapp:/var/www/html # Full wordpress project
+      # ./pluginname/trunk/:/var/www/html/wpcontent/plugins/pluginname # Plugin development
+      # ./themename/trunk/:/var/www/html/wpcontent/themes/themename # Theme development
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: db_wordpress
+      WORDPRESS_DB_USER: root
+      WORDPRESS_DB_PASSWORD: admin
+    depends_on:
+      - db
+    links:
+      - db
+
+  wpcli:
+    image: wordpress:cli
+    #volumes:
+      # ./config/php.conf.ini:/usr/local/etc/php/conf.d/conf.ini
+      # ./wpapp:/var/www/html
+    depends_on:
+      - db
+      - wp
+
+  pma:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: admin
+    ports:
+      - 8889:80
+    links:
+      - db:db
+
+  db:
+    image: mariadb:latest # https://hub.docker.com/_/mysql/  or mariadb https://hub.docker.com/_/mariadb
+    restart: always
+    ports:
+      - 3307:3306 # change ip if required
+    command: ['--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci','--default-authentication-plugin=mysql_native_password']
+    #volumes:
+     #  ./wpdata:/dockerentrypointinitdb.d
+      # db_data:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: db_wordpress
+      MYSQL_ROOT_PASSWORD: admin
+
+#volumes:
+#  db_data:
+
